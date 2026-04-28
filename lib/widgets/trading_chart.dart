@@ -1,72 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:my_fake_bank/models/crypto_model.dart';
+import 'package:candlesticks/candlesticks.dart';
 
-class TradingChart extends StatelessWidget {
-  final List<CandleData> data;
-  const TradingChart({super.key, required this.data});
+class TradingChartWidget extends StatefulWidget {
+  const TradingChartWidget({Key? key}) : super(key: key);
+
+  @override
+  _TradingChartWidgetState createState() => _TradingChartWidgetState();
+}
+
+class _TradingChartWidgetState extends State<TradingChartWidget> {
+  List<Candle> candles = [];
+  bool themeIsDark = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMockData();
+  }
+
+  // Khởi tạo data giả định để hiển thị Chart đẹp ngay khi build
+  void _loadMockData() {
+    // Trong thực tế, bạn sẽ fetch data qua API của Binance hoặc các sàn khác.
+    // Đây là data mockup để tạo hình nến minh họa.
+    DateTime now = DateTime.now();
+    setState(() {
+      candles = List.generate(100, (index) {
+        double base = 65000.0 + (index * 10);
+        return Candle(
+          date: now.subtract(Duration(minutes: 100 - index)),
+          high: base + 150,
+          low: base - 100,
+          open: base,
+          close: base + (index % 2 == 0 ? 50 : -20),
+          volume: 1000.0 + (index * 5),
+        );
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (data.isEmpty) {
+    if (candles.isEmpty) {
       return const Center(
-        child: CircularProgressIndicator(color: Colors.amber),
+        child: CircularProgressIndicator(color: Color(0xFF00C087)),
       );
     }
 
-    return SfCartesianChart(
-      backgroundColor: const Color(0xFF0B0E11),
-      plotAreaBorderWidth: 0,
-      primaryXAxis: DateTimeAxis(
-        isVisible: false,
-      ),
-      primaryYAxis: NumericAxis(
-        opposedPosition: true,
-        labelStyle: const TextStyle(color: Colors.grey, fontSize: 10),
-        majorGridLines: const MajorGridLines(width: 0.1, color: Colors.grey),
-      ),
-      axes: [
-        NumericAxis(
-          name: 'volumeAxis',
-          opposedPosition: false,
-          isVisible: false,
-        )
-      ],
-      indicators: <TechnicalIndicator>[
-        EmaIndicator<CandleData, DateTime>(
-          seriesName: 'MainSeries',
-          valueField: 'close',
-          period: 14,
-          signalLineColor: Colors.blueAccent, // Đã sửa thành signalLineColor
-        ),
-        BollingerBandIndicator<CandleData, DateTime>(
-          seriesName: 'MainSeries',
-          upperLineColor: const Color(0x80E040FB),
-          lowerLineColor: const Color(0x80E040FB),
-        ),
-      ],
-      series: <CartesianSeries<CandleData, DateTime>>[
-        ColumnSeries<CandleData, DateTime>(
-          dataSource: data,
-          name: 'Volume',
-          xValueMapper: (CandleData d, _) => d.x,
-          yValueMapper: (CandleData d, _) => d.volume,
-          yAxisName: 'volumeAxis',
-          color: const Color(0x339E9E9E),
-        ),
-        CandleSeries<CandleData, DateTime>(
-          name: 'MainSeries',
-          dataSource: data,
-          xValueMapper: (CandleData d, _) => d.x,
-          lowValueMapper: (CandleData d, _) => d.low,
-          highValueMapper: (CandleData d, _) => d.high,
-          openValueMapper: (CandleData d, _) => d.open,
-          closeValueMapper: (CandleData d, _) => d.close,
-          bearColor: Colors.redAccent,
-          bullColor: Colors.greenAccent,
-          enableSolidCandles: true,
-        ),
-      ],
+    return Candlesticks(
+      candles: candles,
+      // Đã xóa bullLabel và bearLabel
     );
   }
 }

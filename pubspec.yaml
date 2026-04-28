@@ -34,3 +34,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Thêm đoạn này vào cuối cùng của file pubspec.yaml
+dependency_overrides:
+  syncfusion_flutter_charts: ^33.2.4
+  syncfusion_flutter_core: ^33.2.4
