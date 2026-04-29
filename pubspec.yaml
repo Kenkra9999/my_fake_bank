@@ -9,17 +9,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+
   cupertino_icons: ^1.0.8
   google_fonts: ^6.1.0
-
-  # Thư viện vẽ nến (Bản 2.1.0 là bản ổn định nhất hiện nay)
-  candlesticks: ^2.1.0 
-  
-  # Thư viện Syncfusion (Quan trọng nhất để hết lỗi code trong hình)
+  candlesticks: ^2.1.0
   syncfusion_flutter_charts: ^25.1.37
-  
-  intl: ^0.19.0 
+  intl: ^0.19.0
   mobile_scanner: ^5.0.0
   permission_handler: ^11.3.0
   shared_preferences: ^2.2.2
@@ -34,7 +29,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  # Thêm đoạn này vào cuối cùng của file pubspec.yaml
+
 dependency_overrides:
   syncfusion_flutter_charts: ^33.2.4
   syncfusion_flutter_core: ^33.2.4

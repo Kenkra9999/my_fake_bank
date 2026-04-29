@@ -385,7 +385,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: const Color(0xFF00C853).withValues(alpha: 0.1),
+                backgroundColor: const Color(0xFF00C853).withOpacity(0.1),
                 child: Icon(icon, color: const Color(0xFF00C853)),
               ),
               const SizedBox(width: 15),
@@ -712,7 +712,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
           : Stack(
               children: [
                 MobileScanner(controller: controller!, onDetect: _handleDetect),
-                Container(color: Colors.black.withValues(alpha: 0.4)),
+                Container(color: Colors.black.withOpacity(0.4)),
                 Center(
                   child: SizedBox(
                     width: 280,
@@ -810,15 +810,15 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color(0xFF00E676).withValues(alpha: 0),
+                                  const Color(0xFF00E676).withOpacity(0),
                                   const Color(0xFF00E676),
-                                  const Color(0xFF00E676).withValues(alpha: 0),
+                                  const Color(0xFF00E676).withOpacity(0),
                                 ],
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF00E676)
-                                      .withValues(alpha: 0.5),
+                                  color:
+                                      const Color(0xFF00E676).withOpacity(0.5),
                                   blurRadius: 10,
                                 ),
                               ],
@@ -839,7 +839,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 40, vertical: 12),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.7),
+                          color: Colors.black.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(25),
                         ),
                         child: const Text(
@@ -961,7 +961,7 @@ class _QRResultScreenState extends State<QRResultScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.qr_code_2,
@@ -1082,10 +1082,10 @@ class _QRResultScreenState extends State<QRResultScreen> {
               Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00A55D).withValues(alpha: 0.1),
+                  color: const Color(0xFF00A55D).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: const Color(0xFF00A55D).withValues(alpha: 0.3)),
+                      color: const Color(0xFF00A55D).withOpacity(0.3)),
                 ),
                 child: Column(
                   children: [
@@ -1264,10 +1264,10 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
               Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00A55D).withValues(alpha: 0.1),
+                  color: const Color(0xFF00A55D).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: const Color(0xFF00A55D).withValues(alpha: 0.3)),
+                      color: const Color(0xFF00A55D).withOpacity(0.3)),
                 ),
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1382,7 +1382,7 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                        color: const Color(0xFF00A55D).withValues(alpha: 0.2)),
+                        color: const Color(0xFF00A55D).withOpacity(0.2)),
                   ),
                   child: Builder(
                     builder: (context) {
@@ -1643,7 +1643,7 @@ class _LoanManagementScreenState extends State<LoanManagementScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.info,
-                      size: 60, color: Colors.grey.withValues(alpha: 0.5)),
+                      size: 60, color: Colors.grey.withOpacity(0.5)),
                   const SizedBox(height: 20),
                   const Text("Bạn chưa có khoản vay nào",
                       style: TextStyle(fontSize: 16, color: Colors.grey)),
@@ -1673,8 +1673,7 @@ class _LoanManagementScreenState extends State<LoanManagementScreen> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 8)
+                            color: Colors.black.withOpacity(0.1), blurRadius: 8)
                       ],
                     ),
                     child: Column(
@@ -1693,8 +1692,8 @@ class _LoanManagementScreenState extends State<LoanManagementScreen> {
                                   horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
                                 color: loan.remainingBalance == 0
-                                    ? Colors.green.withValues(alpha: 0.2)
-                                    : Colors.orange.withValues(alpha: 0.2),
+                                    ? Colors.green.withOpacity(0.2)
+                                    : Colors.orange.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
@@ -1910,8 +1909,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 8)
+                        color: Colors.black.withOpacity(0.1), blurRadius: 8)
                   ],
                 ),
                 child: Row(
@@ -1943,14 +1941,13 @@ class _LoanDetailScreenState extends State<LoanDetailScreen> {
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isPaid
-                          ? Colors.green.withValues(alpha: 0.1)
-                          : Colors.white,
+                      color:
+                          isPaid ? Colors.green.withOpacity(0.1) : Colors.white,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                           color: isPaid
-                              ? Colors.green.withValues(alpha: 0.3)
-                              : Colors.grey.withValues(alpha: 0.3)),
+                              ? Colors.green.withOpacity(0.3)
+                              : Colors.grey.withOpacity(0.3)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -2242,8 +2239,7 @@ class _CryptoDashboardScreenState extends State<CryptoDashboardScreen> {
                                             symbol: coin['symbol'])))
                                 .then((_) => _loadCryptoBalance()),
                             leading: CircleAvatar(
-                                backgroundColor:
-                                    Colors.orange.withValues(alpha: 0.2),
+                                backgroundColor: Colors.orange.withOpacity(0.2),
                                 child: Text(symbol[0],
                                     style: const TextStyle(
                                         color: Colors.orange,
@@ -2270,7 +2266,7 @@ class _CryptoDashboardScreenState extends State<CryptoDashboardScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                      color: color.withValues(alpha: 0.2),
+                                      color: color.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(4)),
                                   child: Text(
                                       "${change > 0 ? '+' : ''}${change.toStringAsFixed(2)}%",

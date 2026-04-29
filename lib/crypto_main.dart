@@ -6,7 +6,7 @@ void main() {
 }
 
 class CryptoTradingApp extends StatelessWidget {
-  const CryptoTradingApp({Key? key}) : super(key: key);
+  const CryptoTradingApp({super.key});
 
   @override
   Widget build(BuildContext context) {

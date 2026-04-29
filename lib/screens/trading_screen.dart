@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../widgets/trading_chart.dart';
 
 class TradingScreen extends StatefulWidget {
-  const TradingScreen({Key? key}) : super(key: key);
+  const TradingScreen({super.key});
 
   @override
-  _TradingScreenState createState() => _TradingScreenState();
+  State<TradingScreen> createState() => _TradingScreenState();
 }
 
 class _TradingScreenState extends State<TradingScreen> {

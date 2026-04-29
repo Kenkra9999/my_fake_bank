@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:candlesticks/candlesticks.dart';
 
 class TradingChartWidget extends StatefulWidget {
-  const TradingChartWidget({Key? key}) : super(key: key);
+  const TradingChartWidget({super.key});
 
   @override
-  _TradingChartWidgetState createState() => _TradingChartWidgetState();
+  State<TradingChartWidget> createState() => _TradingChartWidgetState();
 }
 
 class _TradingChartWidgetState extends State<TradingChartWidget> {
