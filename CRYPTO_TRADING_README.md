@@ -53,7 +53,7 @@ Supported timeframes for analysis:
 
 ```
 lib/
-├── crypto_main.dart              # App entry point
+├── crypto.dart                  # Standalone crypto app (optional)
 ├── models/
 │   └── crypto_data.dart          # Data models and calculations
 └── screens/
@@ -85,15 +85,17 @@ Tracks open and closed trading positions with:
 
 ## How to Run
 
-1. Replace the entry point in your `main.dart` with:
-   ```dart
-   import 'crypto_main.dart';
-   ```
-
-2. Or directly run the crypto app:
+1. **Main Bank App (Recommended):**
    ```bash
-   flutter run lib/crypto_main.dart
+   flutter run lib/main.dart
    ```
+   This includes both banking features and crypto trading integrated.
+
+2. **Standalone Crypto App (Optional):**
+   ```bash
+   flutter run lib/crypto.dart
+   ```
+   This runs only the crypto trading interface.
 
 3. Ensure Syncfusion charts dependency is installed (already in pubspec.yaml)
 

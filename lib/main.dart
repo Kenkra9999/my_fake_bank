@@ -9,6 +9,38 @@ import 'package:image_picker/image_picker.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'dart:async';
 
+// ========== CONSTANTS & UTILITIES ==========
+class AppColors {
+  static const Color primary = Color(0xFF00A55D);
+  static const Color primaryLight = Color(0xFF00E676);
+  static const Color secondary = Color(0xFF00C853);
+  static const Color success = Color(0xFF00C853);
+  static const Color error = Colors.red;
+  static const Color warning = Colors.orange;
+  static const Color background = Color(0xFFF0F2F5);
+  static const Color cryptoBg = Color(0xFF121212);
+  static const Color cryptoCard = Color(0xFF1E1E1E);
+}
+
+class AppUtils {
+  static String formatCurrency(int amount) {
+    return amount.toString().replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (match) => '${match[1]},',
+        );
+  }
+
+  static String formatDouble(double amount, {int decimals = 2}) {
+    String formatted = amount.toStringAsFixed(decimals);
+    List<String> parts = formatted.split('.');
+    parts[0] = int.parse(parts[0]).toString().replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (match) => '${match[1]},',
+        );
+    return parts.join('.');
+  }
+}
+
 // --- MODEL LOAN ---
 class Loan {
   String id;
@@ -193,6 +225,14 @@ class VPBankCloneApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Roboto', useMaterial3: true),
       home: const HomeScreen(),
+      routes: {
+        '/': (context) => const HomeScreen(),
+        '/transfer': (context) => const TransferInputScreen(),
+        '/qr': (context) => const QRScannerScreen(),
+        '/loan': (context) => const LoanApplicationScreen(),
+        '/loan-management': (context) => const LoanManagementScreen(),
+        '/crypto': (context) => const CryptoDashboardScreen(),
+      },
     );
   }
 }
@@ -207,14 +247,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String balance = "1,006,214";
+  late _LifecycleObserver _lifecycleObserver;
 
   @override
   void initState() {
     super.initState();
     _loadBalance();
-    WidgetsBinding.instance.addObserver(
-      _LifecycleObserver(onResume: _loadBalance),
-    );
+    _lifecycleObserver = _LifecycleObserver(onResume: _loadBalance);
+    WidgetsBinding.instance.addObserver(_lifecycleObserver);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(_lifecycleObserver);
+    super.dispose();
   }
 
   void _loadBalance() async {
@@ -222,22 +268,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final savedBalance = prefs.getInt('balance') ?? 1006214;
     if (mounted) {
       setState(() {
-        balance = _formatBalance(savedBalance);
+        balance = AppUtils.formatCurrency(savedBalance);
       });
     }
-  }
-
-  String _formatBalance(int amount) {
-    return amount.toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (match) => '${match[1]},',
-        );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
+      backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -245,7 +284,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF00A55D), Color(0xFF00E676)],
+                  colors: [AppColors.primary, AppColors.primaryLight],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -311,54 +350,34 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildActionCard(
               icon: Icons.swap_horiz_rounded,
               title: "Chuyển tiền",
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const TransferInputScreen(),
-                ),
-              ).then((_) => _loadBalance()),
+              onTap: () => Navigator.pushNamed(context, '/transfer')
+                  .then((_) => _loadBalance()),
             ),
             _buildActionCard(
               icon: Icons.qr_code_scanner,
               title: "Quét mã QR",
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const QRScannerScreen(),
-                ),
-              ).then((_) => _loadBalance()),
+              onTap: () => Navigator.pushNamed(context, '/qr')
+                  .then((_) => _loadBalance()),
             ),
             _buildActionCard(
               icon: Icons.attach_money,
               title: "Vay tiền",
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const LoanApplicationScreen(),
-                ),
-              ).then((_) => _loadBalance()),
+              onTap: () => Navigator.pushNamed(context, '/loan')
+                  .then((_) => _loadBalance()),
             ),
             _buildActionCard(
               icon: Icons.receipt_long,
               title: "Quản lý khoản vay",
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const LoanManagementScreen(),
-                ),
-              ).then((_) => _loadBalance()),
+              onTap: () => Navigator.pushNamed(context, '/loan-management')
+                  .then((_) => _loadBalance()),
             ),
             _buildActionCard(icon: Icons.history, title: "Lịch sử giao dịch"),
             _buildActionCard(icon: Icons.credit_card, title: "Quản lý thẻ"),
             _buildActionCard(
               icon: Icons.currency_bitcoin,
               title: "Đầu tư Crypto",
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CryptoDashboardScreen(),
-                ),
-              ).then((_) => _loadBalance()),
+              onTap: () => Navigator.pushNamed(context, '/crypto')
+                  .then((_) => _loadBalance()),
             ),
             const SizedBox(height: 30),
           ],
@@ -385,8 +404,8 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: const Color(0xFF00C853).withOpacity(0.1),
-                child: Icon(icon, color: const Color(0xFF00C853)),
+                backgroundColor: AppColors.secondary.withOpacity(0.1),
+                child: Icon(icon, color: AppColors.secondary),
               ),
               const SizedBox(width: 15),
               Text(
@@ -404,7 +423,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
 
 // --- MÀN HÌNH NHẬP THÔNG TIN ---
 class TransferInputScreen extends StatefulWidget {
@@ -420,9 +438,21 @@ class _TransferInputScreenState extends State<TransferInputScreen> {
   final TextEditingController _accController = TextEditingController();
 
   @override
+  void dispose() {
+    _nameController.dispose();
+    _amountController.dispose();
+    _accController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Chuyển tiền ngoài VPBank")),
+      appBar: AppBar(
+        title: const Text("Chuyển tiền ngoài VPBank"),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -446,7 +476,7 @@ class _TransferInputScreenState extends State<TransferInputScreen> {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00C853),
+                  backgroundColor: AppColors.secondary,
                 ),
                 onPressed: () {
                   Navigator.push(
@@ -513,7 +543,7 @@ class _SuccessReceiptScreenState extends State<SuccessReceiptScreen> {
     String now = DateFormat('HH:mm, dd/MM/yyyy').format(DateTime.now());
 
     return Scaffold(
-      backgroundColor: const Color(0xFF00A55D),
+      backgroundColor: AppColors.primary,
       body: Center(
         child: Container(
           width: MediaQuery.of(context).size.width * 0.85,
@@ -526,14 +556,14 @@ class _SuccessReceiptScreenState extends State<SuccessReceiptScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.check_circle,
-                  color: Color(0xFF00C853), size: 80),
+                  color: AppColors.success, size: 80),
               const SizedBox(height: 15),
               const Text(
                 "Giao dịch thành công",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF00C853),
+                  color: AppColors.success,
                 ),
               ),
               const SizedBox(height: 30),
@@ -550,7 +580,7 @@ class _SuccessReceiptScreenState extends State<SuccessReceiptScreen> {
                 onPressed: () =>
                     Navigator.popUntil(context, (route) => route.isFirst),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00A55D),
+                  backgroundColor: AppColors.primary,
                 ),
                 child: const Text(
                   "Về trang chủ",
@@ -1249,10 +1279,10 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text("Đăng ký vay tiền"),
-        backgroundColor: const Color(0xFF00A55D),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -1264,10 +1294,10 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
               Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00A55D).withOpacity(0.1),
+                  color: AppColors.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: const Color(0xFF00A55D).withOpacity(0.3)),
+                      color: AppColors.primary.withOpacity(0.3)),
                 ),
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1276,7 +1306,7 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                         style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF00A55D))),
+                            color: AppColors.primary)),
                     SizedBox(height: 8),
                     Text(
                         "✓ Lãi suất cố định: 2%/tháng\n✓ Được duyệt tự động 100%\n✓ Trả gốc và lãi linh hoạt theo tháng\n✓ Trừ trực tiếp vào tài khoản",
@@ -1296,13 +1326,13 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                 decoration: InputDecoration(
                   hintText: "VD: Kinh doanh, Giáo dục, Mua sắm...",
                   prefixIcon: const Icon(Icons.assignment),
-                  prefixIconColor: const Color(0xFF00A55D),
+                  prefixIconColor: AppColors.primary,
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide:
-                        const BorderSide(color: Color(0xFF00A55D), width: 2),
+                        const BorderSide(color: AppColors.primary, width: 2),
                   ),
                   filled: true,
                   fillColor: Colors.white,
@@ -1326,9 +1356,7 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                     return;
                   }
                   int number = int.parse(cleanValue);
-                  String formatted = number.toString().replaceAllMapped(
-                      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-                      (match) => '${match[1]},');
+                  String formatted = AppUtils.formatCurrency(number);
                   _amountController.value = TextEditingValue(
                     text: formatted,
                     selection: TextSelection.fromPosition(
@@ -1339,16 +1367,16 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                 decoration: InputDecoration(
                   hintText: "0",
                   prefixIcon: const Icon(Icons.payments),
-                  prefixIconColor: const Color(0xFF00A55D),
+                  prefixIconColor: AppColors.primary,
                   suffixText: "đ",
                   suffixStyle: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Color(0xFF00A55D)),
+                      fontWeight: FontWeight.bold, color: AppColors.primary),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide:
-                        const BorderSide(color: Color(0xFF00A55D), width: 2),
+                        const BorderSide(color: AppColors.primary, width: 2),
                   ),
                   filled: true,
                   fillColor: Colors.white,
@@ -1367,7 +1395,7 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                 max: 36,
                 divisions: 35,
                 label: selectedMonths.toString(),
-                activeColor: const Color(0xFF00A55D),
+                activeColor: AppColors.primary,
                 onChanged: (value) {
                   setState(() {
                     selectedMonths = value.toInt();
@@ -1382,7 +1410,7 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                        color: const Color(0xFF00A55D).withOpacity(0.2)),
+                        color: AppColors.primary.withOpacity(0.2)),
                   ),
                   child: Builder(
                     builder: (context) {
@@ -1397,13 +1425,13 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                       return Column(
                         children: [
                           _buildCalculationRow(
-                              "Số tiền gốc", "${_amountController.text} đ"),
+                              "Số tiền gốc", "${AppUtils.formatCurrency(principal)} đ"),
                           const Divider(height: 20),
                           _buildCalculationRow("Tổng lãi phải trả (2%/tháng)",
-                              "${totalInterest.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} đ"),
+                              "${AppUtils.formatCurrency(totalInterest)} đ"),
                           const Divider(height: 20),
                           _buildCalculationRow("Thanh toán mỗi tháng (gốc+lãi)",
-                              "${monthlyPayment.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} đ",
+                              "${AppUtils.formatCurrency(monthlyPayment)} đ",
                               isHighlight: true),
                         ],
                       );
@@ -1417,7 +1445,7 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
                 child: ElevatedButton(
                   onPressed: _submitLoan,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00A55D),
+                    backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
@@ -1443,13 +1471,13 @@ class _LoanApplicationScreenState extends State<LoanApplicationScreen> {
         Text(label,
             style: TextStyle(
                 fontSize: 14,
-                color: isHighlight ? const Color(0xFF00A55D) : Colors.grey,
+                color: isHighlight ? AppColors.primary : Colors.grey,
                 fontWeight: isHighlight ? FontWeight.bold : FontWeight.normal)),
         Text(value,
             style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: isHighlight ? const Color(0xFF00A55D) : Colors.black87)),
+                color: isHighlight ? AppColors.primary : Colors.black87)),
       ],
     );
   }
@@ -1518,20 +1546,20 @@ class _LoanApprovalScreenState extends State<LoanApprovalScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.check_circle,
-                        color: Color(0xFF00C853), size: 80),
+                        color: AppColors.success, size: 80),
                     const SizedBox(height: 20),
                     const Text("Duyệt vay thành công!",
                         style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF00C853))),
+                            color: AppColors.success)),
                     const SizedBox(height: 10),
                     const Text("Tiền đã được cộng vào tài khoản của bạn.",
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.grey, fontSize: 14)),
                     const SizedBox(height: 30),
                     _buildInfoBox("Số tiền vay",
-                        "${widget.loan.principalAmount.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} đ"),
+                        "${AppUtils.formatCurrency(widget.loan.principalAmount)} đ"),
                     _buildInfoBox("Mục đích", widget.loan.purpose),
                     _buildInfoBox("Kỳ hạn", "${widget.loan.months} tháng"),
                     _buildInfoBox("Lãi suất", "2%/tháng"),
@@ -1540,10 +1568,10 @@ class _LoanApprovalScreenState extends State<LoanApprovalScreen> {
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                            context, '/', (route) => false),
+                        onPressed: () => Navigator.popUntil(
+                            context, (route) => route.isFirst),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF00A55D),
+                          backgroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
                         ),
@@ -1631,10 +1659,10 @@ class _LoanManagementScreenState extends State<LoanManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text("Quản lý khoản vay"),
-        backgroundColor: const Color(0xFF00A55D),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
       body: loans.isEmpty
@@ -1693,7 +1721,7 @@ class _LoanManagementScreenState extends State<LoanManagementScreen> {
                               decoration: BoxDecoration(
                                 color: loan.remainingBalance == 0
                                     ? Colors.green.withOpacity(0.2)
-                                    : Colors.orange.withOpacity(0.2),
+                                    : AppColors.warning.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
@@ -1705,7 +1733,7 @@ class _LoanManagementScreenState extends State<LoanManagementScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: loan.remainingBalance == 0
                                       ? Colors.green
-                                      : Colors.orange,
+                                      : AppColors.warning,
                                 ),
                               ),
                             ),
@@ -1722,7 +1750,7 @@ class _LoanManagementScreenState extends State<LoanManagementScreen> {
                                     style: TextStyle(
                                         fontSize: 12, color: Colors.grey)),
                                 Text(
-                                    "${loan.principalAmount.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} đ",
+                                    "${AppUtils.formatCurrency(loan.principalAmount)} đ",
                                     style: const TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
@@ -1736,11 +1764,11 @@ class _LoanManagementScreenState extends State<LoanManagementScreen> {
                                     style: TextStyle(
                                         fontSize: 12, color: Colors.grey)),
                                 Text(
-                                    "${loan.remainingBalance.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} đ",
+                                    "${AppUtils.formatCurrency(loan.remainingBalance)} đ",
                                     style: const TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
-                                        color: Color(0xFF00A55D))),
+                                        color: AppColors.primary)),
                               ],
                             ),
                             Column(
@@ -1848,8 +1876,8 @@ class _LoanDetailScreenState extends State<LoanDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(
-                "Thanh toán thành công! (-${amountToPay.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} đ)"),
-            backgroundColor: const Color(0xFF00C853)),
+                "Thanh toán thành công! (-${AppUtils.formatCurrency(amountToPay)} đ)"),
+            backgroundColor: AppColors.success),
       );
     }
   }
@@ -1859,10 +1887,10 @@ class _LoanDetailScreenState extends State<LoanDetailScreen> {
     final monthlyPayments = currentLoan.getMonthlyPaymentSchedule();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text("Chi tiết khoản vay"),
-        backgroundColor: const Color(0xFF00A55D),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -1875,7 +1903,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                      colors: [Color(0xFF00A55D), Color(0xFF00E676)],
+                      colors: [AppColors.primary, AppColors.primaryLight],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight),
                   borderRadius: BorderRadius.circular(12),
@@ -1893,9 +1921,9 @@ class _LoanDetailScreenState extends State<LoanDetailScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         _buildHeaderInfo("Số tiền gốc",
-                            "${currentLoan.principalAmount.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} đ"),
+                            "${AppUtils.formatCurrency(currentLoan.principalAmount)} đ"),
                         _buildHeaderInfo("Dư nợ gốc",
-                            "${currentLoan.remainingBalance.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} đ"),
+                            "${AppUtils.formatCurrency(currentLoan.remainingBalance)} đ"),
                       ],
                     ),
                   ],
@@ -1916,9 +1944,9 @@ class _LoanDetailScreenState extends State<LoanDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildStatBox("Tổng lãi phải trả",
-                        "${currentLoan.totalInterest.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} đ"),
+                        "${AppUtils.formatCurrency(currentLoan.totalInterest)} đ"),
                     _buildStatBox("Tổng gốc + lãi",
-                        "${currentLoan.totalAmount.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} đ"),
+                        "${AppUtils.formatCurrency(currentLoan.totalAmount)} đ"),
                     _buildStatBox("Tiến độ",
                         "${currentLoan.payments.length}/${currentLoan.months}"),
                   ],
@@ -1975,7 +2003,7 @@ class _LoanDetailScreenState extends State<LoanDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                    "${payment.amount.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} đ",
+                                    "${AppUtils.formatCurrency(payment.amount)} đ",
                                     style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
@@ -2059,6 +2087,12 @@ class _LifecycleObserver with WidgetsBindingObserver {
       onResume();
     }
   }
+  
+  @override
+  void didChangeTextScaleFactor(double scale) {}
+  
+  @override
+  void didHaveMemoryPressure() {}
 }
 
 // ==========================================
@@ -2110,7 +2144,8 @@ class _CryptoDashboardScreenState extends State<CryptoDashboardScreen> {
   Future<void> _fetchMarketData() async {
     try {
       final response = await http
-          .get(Uri.parse('https://api.binance.com/api/v3/ticker/24hr'));
+          .get(Uri.parse('https://api.binance.com/api/v3/ticker/24hr'))
+          .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         if (mounted) {
@@ -2131,7 +2166,7 @@ class _CryptoDashboardScreenState extends State<CryptoDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: AppColors.cryptoBg,
       appBar: AppBar(
           title: const Text("Thị trường Futures"),
           backgroundColor: Colors.black,
@@ -2161,7 +2196,7 @@ class _CryptoDashboardScreenState extends State<CryptoDashboardScreen> {
                           color: Colors.black)),
                   const SizedBox(height: 5),
                   Text(
-                      "≈ ${(usdtBalance * exchangeRate).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (match) => '${match[1]},')} VNĐ",
+                      "≈ ${AppUtils.formatDouble(usdtBalance * exchangeRate)} VNĐ",
                       style: const TextStyle(color: Colors.black87)),
                 ],
               ),
@@ -2229,7 +2264,7 @@ class _CryptoDashboardScreenState extends State<CryptoDashboardScreen> {
                         Color color = change >= 0 ? Colors.green : Colors.red;
 
                         return Card(
-                          color: const Color(0xFF1E1E1E),
+                          color: AppColors.cryptoCard,
                           margin: const EdgeInsets.symmetric(vertical: 8),
                           child: ListTile(
                             onTap: () => Navigator.push(
@@ -2528,8 +2563,10 @@ class _CoinTradingScreenState extends State<CoinTradingScreen> {
 
   Future<void> _fetchKlines() async {
     try {
-      final response = await http.get(Uri.parse(
-          'https://api.binance.com/api/v3/klines?symbol=${widget.symbol}&interval=15m&limit=50'));
+      final response = await http
+          .get(Uri.parse(
+              'https://api.binance.com/api/v3/klines?symbol=${widget.symbol}&interval=15m&limit=50'))
+          .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         List<ChartSampleData> temp = [];
@@ -2556,8 +2593,10 @@ class _CoinTradingScreenState extends State<CoinTradingScreen> {
 
   Future<void> _fetchCurrentPrice() async {
     try {
-      final response = await http.get(Uri.parse(
-          'https://api.binance.com/api/v3/ticker/price?symbol=${widget.symbol}'));
+      final response = await http
+          .get(Uri.parse(
+              'https://api.binance.com/api/v3/ticker/price?symbol=${widget.symbol}'))
+          .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (mounted) {
